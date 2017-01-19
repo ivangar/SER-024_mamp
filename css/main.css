@@ -1,0 +1,47 @@
+#v-nav >div.tab-content
+{
+    min-height: 700px;
+}
+
+#id_1matrix, #id_2matrix, .wide_label{
+	width: 678px;
+}
+
+.wide_label{
+    width: 662px;
+}
+
+.form-input-wider {
+    margin-bottom: 10px;
+    width: 678px;
+}
+
+.form-input-wider .form-textarea{
+    width: 678px;
+    max-width: 678px;
+}
+
+.form-line-custom {
+    box-sizing: border-box;
+    margin: 5px 0;
+    padding: 5px 0;
+    width: 99%;
+}
+
+.form-matrix-table-wide {
+    border-collapse: collapse;
+    margin-bottom: 5px;
+    width: 678px;
+}
+
+.form-matrix-row-headers.wide{
+    width: 370px;
+}
+
+.parsley-container.eval ul {
+    width: 675px;
+}
+
+.accred_reqs.unlinked{
+     cursor: default;
+}
