@@ -6,16 +6,37 @@ session_start();
 ob_start(); // Turn on output buffering. From this point output is stored in an internal buffer 
 require_once('../../inc/php/membersite_config.php');
 
+
+
+if(isset($_POST['login_submitted']))
+{
+	//After logged in redirect to index and catch session login at the beginning (Session var already active)
+	if(!$fgmembersite->Login()){
+		$error_returned = $fgmembersite->GetErrorMessage(); 
+	}
+}
+
+//if user wants to logout
+if(isset($_POST['logout_submitted']))
+{	
+	$fgmembersite->LogOut();
+}
+
 if(isset($_COOKIE['rememberme']) && !empty($_COOKIE['rememberme']) ){
 	$fgmembersite->CheckCookie();
 }
 
-//If the user has not logged in, restrict access
-
+//If the user has not logged in, not show my account item
 if(!$fgmembersite->CheckLogin())
-{	
-	$fgmembersite->RedirectToURL("../../AccessDeny/deny_access.html");
-	exit;
+{
+	$menu_item = "<li><a href='registration.php' class='main'>Register</a></li>";
+	$welcomebox = "<a href='registration.php' ><img width='270' height='270' src='images/welcomebox.jpg' alt='Register Now' /></a>";
+
+}
+
+else {
+	$menu_item = "<li><a href='account.php' class='main'>My Account</a></li>";
+	$welcomebox = "<img width='270' height='270' src='images/welcomebox2.jpg' alt='Mission Statement' />";
 }
 
 
@@ -83,15 +104,154 @@ line-height: 10px;
 }
 
 </style>
+<script type="text/javascript">
+
+// unblock when ajax activity stops 
+//$(document).ajaxStop($.unblockUI); 
+
+$(document).ready(function(){
+	var login_submitted = <?php if(isset($_POST['login_submitted'])) echo "true"; else echo "false";?>;
+	var access = <?php if($fgmembersite->CheckLogin()) echo "true"; else echo "false";?>;
+	var logged_in = <?php if(isset($_SESSION['welcome'])) {echo "true"; unset($_SESSION['welcome']);} else echo "false"; ?>;
+
+    if(!access && login_submitted){
+			$.blockUI({ message: $('#access-request'), 
+	            css: { 
+					top:  ($(window).height() - 400) /2 + 'px', 
+					left: ($(window).width() - 500) /2 + 'px', 
+					cursor:'auto',
+					width: '430px',
+					height: '200px',
+					border: '10px solid #ccc',
+					padding: '0', 
+					backgroundColor: '#fff', 
+					'-moz-border-radius': '20px',
+					'-webkit-border-radius': '20px',
+				    'border-radius': '20px'},
+				 overlayCSS: { backgroundColor: '#000', opacity: .5, cursor:'not-allowed'}
+			  });	
+			  $('.blockOverlay').attr('title','Click to unblock').click($.unblockUI); 
+    }
+
+    $('.checkAccess').click(function() {
+    	if(!access){
+    		$.blockUI({ message: $('#deny-access'), 
+	        	css: { 
+					top:  ($(window).height() - 400) /2 + 'px', 
+					left: ($(window).width() - 500) /2 + 'px', 
+					cursor:'auto',
+					width: '430px',
+					height: '200px',
+					border: '10px solid #ccc',
+					padding: '0', 
+					backgroundColor: '#fff', 
+					'-moz-border-radius': '20px',
+					'-webkit-border-radius': '20px',
+				    'border-radius': '20px'},
+				 overlayCSS: { backgroundColor: '#000', opacity: .5, cursor:'not-allowed'}
+			});
+			$('.blockOverlay').click($.unblockUI); 
+			  return false;
+    	}
+
+    	else return true;
+
+    });
+
+    //close dialog window on clicking the gif button
+    $('#close, #close2').click(function() { 
+		$.unblockUI();
+	});
+
+    //Swap close image button
+    $('#swap_button, #swap_button2').mouseover(function () {
+    	var button_id = ( $(this).attr( "id" ) === "swap_button" ) ? "#close" : "#close2";
+     	$(button_id).attr( "src", "/images/closebutton_hover.png" );
+    });
+
+	//Swap close image button
+    $('#swap_button, #swap_button2').mouseout(function () {
+    	var button_id = ( $(this).attr( "id" ) === "swap_button" ) ? "#close" : "#close2";
+		$(button_id).attr( "src", "/images/closebutton.png" );
+    });   
+
+    //show welcome window on login
+    if(access && logged_in){
+		$.blockUI({ 
+		            message: '\<br\>Welcome <?php echo $fgmembersite->UserFullName(); ?> \<br\>\<br\> Now you\'re logged in \<br\>\<br\>', 
+		            fadeIn: 700, 
+		            fadeOut: 1000, 
+		            timeout: 2000, 
+		            showOverlay: false, 
+		            centerY: false, 
+		            css: { 
+		                width: '400px',
+						height: '200px', 
+						top:  ($(window).height() - 200) /2 + 'px', 
+						left: ($(window).width() - 400) /2 + 'px', 
+		                border: 'none', 
+		                padding: '5px', 
+						textAlign: 'center',
+						font: '30px Arial,Helvetica,sans-serif',
+		                backgroundColor: '#000', 
+		                '-moz-border-radius': '10px',
+		                '-webkit-border-radius': '10px', 
+		                'border-radius': '10px',
+		                opacity: .8, 
+		                color: '#fff' 
+		            } 
+		}); 
+    }
+	
+	var countChecked = function() {
+		var remember = $( "input:checked" ).val();
+		if(remember === '1'){
+			 $("#remember_submitted").val("1");
+		}
+
+		else $("#remember_submitted").val("0");
+	};
+
+	countChecked();
+	
+	$( "#remember_me:checkbox" ).on( "click", countChecked );
+
+	$("ul.success li").css({ "line-height": "50px", "font-size": "15px", "-webkit-transition": "all 1s linear", "-moz-transition": "all 1s linear", "-o-transition": "all 1s linear", "transition": "all 1s linear"});
+
+	
+});
+
+</script>
+
 </head>
 <body class="gradient"> 
+	<div id="access-request" style="display:none;"> 
+	<?php $fgmembersite->printModalDialog(); ?>
+</div> 
+
+<div id="deny-access" style="display:none;"> 
+	<?php $fgmembersite->printForbidAccess(); ?>
+</div>
 <table class="content" border="0" cellspacing="0">
   <tr valign="bottom">
     <td width="250" height="90" align="left" bgcolor="#FFFFFF" style="padding:0 0 10px 20px;" ><a href="/index.php"><img src="/images/dxLinkCU.jpg" width="147" height="42" align="left" alt="dxlink"/></a>
 	</td>
-	<td bgcolor="#FFFFFF" style="padding:0 0 5px 0;" align="right">
-		<div style="display: inline-block;"><?php $fgmembersite->printLogout(); ?></div>
-	</td>
+	<td align="right" style="padding-right:20px">
+	<div align="right" style="display: inline-block;">
+		<!-- LOGIN/LOGOUT SECTION -->
+		<?PHP
+		//include the main validation script
+		//require_once "inc/php/formvalidator.php";
+
+		if(!$fgmembersite->CheckLogin()){ $fgmembersite->printLogin();	}
+		else{$fgmembersite->printLogout();}
+		
+		?>
+	</div>
+</td>
+	<!-- <td bgcolor="#FFFFFF" style="padding:0 0 5px 0;" align="right">
+		<div style="display: inline-block;"><?php //$fgmembersite->printLogout(); ?></div>
+	</td> -->
   </tr>
 </table>
 <table class="content" border="0" cellspacing="0">
