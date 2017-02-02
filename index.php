@@ -8,7 +8,6 @@ require_once('../../inc/php/membersite_config.php');
 
 
 
-// If the login submit button is clicked, proceed with server side functions
 if(isset($_POST['login_submitted']))
 {
 	//After logged in redirect to index and catch session login at the beginning (Session var already active)
@@ -41,38 +40,11 @@ else {
 }
 
 
-//Check if there was a redirect from account.php and notify the user that the link is not valid anymore
-if(!empty($_SESSION['link'])){
-	
-	//sanitize link
-	$link = $fgmembersite->Sanitize($_SESSION['link']);
-
-	//If the session was active, unset session variable and destroy session for security purposes
-	$sessionvar = $fgmembersite->GetLoginSessionVar();
-	$_SESSION[$sessionvar]=NULL;   
-    unset($_SESSION[$sessionvar]);
-    unset($_SESSION['link']);
-
-    //display error messages
-	if (!empty($link) && $link === 'invalid'){
-		$action['result'] = 'error';
-		$action['text'] = 'This link is no longer valid. Please login with your user name and password or complete the registration process to access dxLink site.';
-		$fgmembersite->HandleCustomError($action);
-	}
-
-	if (!empty($link) && $link === 'failUpdate'){
-		$action['result'] = 'error';
-		$action['text'] = 'The user could not be updated, verify the information you received in the confirmation email is correct.';
-		$fgmembersite->HandleCustomError($action);
-	}
-
-	if (!empty($link) && $link === 'resetPass'){
-		$action['result'] = 'success';
-		$action['text'] = 'Your password has been successfully updated. Please use your new password to login into your account.';
-		$fgmembersite->HandleCustomError($action);
-	}
+//if user wants to logout
+if(isset($_POST['logout_submitted']))
+{
+	$fgmembersite->LogOut();
 }
-
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -100,6 +72,38 @@ if(!empty($_SESSION['link'])){
 <script src="https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 <script type="text/javascript" src="js/program.js"></script>
 <script src="/js/jquery.blockUI.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-49063752-3', 'auto');
+  ga('send', 'pageview');
+
+</script>
+<style>
+.ui-tooltip {
+background: #f6f6f6;
+border: 2px solid #969696;
+
+}
+.ui-tooltip {
+border-radius: 10px;
+box-shadow: 0 0 7px black;
+font-family:Arial,Helvetica,sans-serif;
+font-size:16px;
+font-style: italic;
+padding: 10px 20px;
+}
+
+.slides_qty{
+font-family:Arial,Helvetica,sans-serif;
+font-size:12px;
+line-height: 10px;
+}
+
+</style>
 <script type="text/javascript">
 
 // unblock when ajax activity stops 
@@ -154,13 +158,6 @@ $(document).ready(function(){
 
     });
 
-	$('body').on('hover', 'span.textrevised').tooltip({
-	    show: {
-	    effect: "slideDown",
-	    delay: 2
-	}
-	});
-
     //close dialog window on clicking the gif button
     $('#close, #close2').click(function() { 
 		$.unblockUI();
@@ -169,13 +166,13 @@ $(document).ready(function(){
     //Swap close image button
     $('#swap_button, #swap_button2').mouseover(function () {
     	var button_id = ( $(this).attr( "id" ) === "swap_button" ) ? "#close" : "#close2";
-     	$(button_id).attr( "src", "images/closebutton_hover.png" );
+     	$(button_id).attr( "src", "/images/closebutton_hover.png" );
     });
 
 	//Swap close image button
     $('#swap_button, #swap_button2').mouseout(function () {
     	var button_id = ( $(this).attr( "id" ) === "swap_button" ) ? "#close" : "#close2";
-		$(button_id).attr( "src", "images/closebutton.png" );
+		$(button_id).attr( "src", "/images/closebutton.png" );
     });   
 
     //show welcome window on login
@@ -206,19 +203,6 @@ $(document).ready(function(){
 		}); 
     }
 	
-	$('.bxslider').bxSlider({
-	  auto: true,
-	  autoControls: false,
-	  controls: true,
-	  pause: 3500,
-	  mode: 'fade',
-	  slideMargin: 0,
-	  adaptiveHeight: true,
-	  responsive: true,
-	  autoHover: true,
-	  pager: false
-	});
-	
 	var countChecked = function() {
 		var remember = $( "input:checked" ).val();
 		if(remember === '1'){
@@ -238,71 +222,38 @@ $(document).ready(function(){
 });
 
 </script>
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-  ga('create', 'UA-49063752-3', 'auto');
-  ga('send', 'pageview');
-
-</script>
-<style>
-.ui-tooltip {
-background: #f6f6f6;
-border: 2px solid #969696;
-
-}
-.ui-tooltip {
-border-radius: 10px;
-box-shadow: 0 0 7px black;
-font-family:Arial,Helvetica,sans-serif;
-font-size:16px;
-font-style: italic;
-padding: 10px 20px;
-}
-
-.slides_qty{
-font-family:Arial,Helvetica,sans-serif;
-font-size:12px;
-line-height: 10px;
-}
-
-</style>
 </head>
 <body class="gradient"> 
+	<div id="access-request" style="display:none;"> 
+	<?php $fgmembersite->printModalDialog(); ?>
+</div> 
 
-
-
-
-
-
-
-
-
+<div id="deny-access" style="display:none;"> 
+	<?php $fgmembersite->printForbidAccess(); ?>
+</div>
 <table class="content" border="0" cellspacing="0">
   <tr valign="bottom">
     <td width="250" height="90" align="left" bgcolor="#FFFFFF" style="padding:0 0 10px 20px;" ><a href="/index.php"><img src="/images/dxLinkCU.jpg" width="147" height="42" align="left" alt="dxlink"/></a>
 	</td>
-	<td>
-	<div align="right" style="padding-right: 25px;">
-	<?PHP
+	<td align="right" style="padding-right:20px">
+	<div align="right" style="display: inline-block;">
+		<!-- LOGIN/LOGOUT SECTION -->
+		<?PHP
 		//include the main validation script
-		
+		//require_once "inc/php/formvalidator.php";
 
 		if(!$fgmembersite->CheckLogin()){ $fgmembersite->printLogin();	}
 		else{$fgmembersite->printLogout();}
 		
 		?>
 	</div>
-	</td>
-
+</td>
+	<!-- <td bgcolor="#FFFFFF" style="padding:0 0 5px 0;" align="right">
+		<div style="display: inline-block;"><?php //$fgmembersite->printLogout(); ?></div>
+	</td> -->
   </tr>
 </table>
-<!-- LOGIN/LOGOUT SECTION -->
-		
-
 <table class="content" border="0" cellspacing="0">
   <tr valign="bottom">
 	  <td style="padding:0 0 5px 0;"><img src="/images/bannerCU.jpg" align="left" alt="Accredited Programs" width="1000px;"/>
